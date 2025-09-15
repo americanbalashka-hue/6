@@ -26,7 +26,7 @@
 
 <button id="startButton">Нажмите, чтобы включить камеру</button>
 
-<a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+<a-scene embedded arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
   <!-- Маркер -->
   <a-marker type="pattern" url="/public/pattern-DSC00549.patt.txt">
     <!-- Видео на маркере -->
@@ -43,22 +43,27 @@
 
   button.addEventListener('click', async () => {
     try {
-      // Запрос задней камеры
+      // Запрос камеры с максимальным качеством
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { exact: "environment" } },
+        video: {
+          facingMode: { exact: "environment" },  // задняя камера
+          width: { min: 1280, ideal: 3840, max: 7680 }, // до 8K, если доступно
+          height: { min: 720, ideal: 2160, max: 4320 }, // до 4K/8K
+          frameRate: { ideal: 60, max: 120 } // до 60–120 fps
+        },
         audio: false
       });
 
-      // Подключаем поток камеры к AR.js
+      // Подключаем поток камеры
       const videoElement = document.createElement('video');
       videoElement.srcObject = stream;
       await videoElement.play();
 
-      // Скрываем кнопку и показываем сцену AR
+      // Скрываем кнопку и показываем сцену
       button.style.display = 'none';
       scene.style.display = 'block';
     } catch (err) {
-      alert('Не удалось включить камеру. Пожалуйста, разрешите доступ.');
+      alert('Не удалось включить камеру. Попробуйте дать разрешение.');
       console.error(err);
     }
   });
